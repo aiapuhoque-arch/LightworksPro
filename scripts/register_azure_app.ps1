@@ -9,6 +9,41 @@
 #>
 $ErrorActionPreference = "Stop"
 
+# Force TLS 1.2/1.3 — required for Microsoft Graph; some Windows configurations
+# default to TLS 1.0 which graph.microsoft.com no longer accepts.
+[Net.ServicePointManager]::SecurityProtocol = `
+    [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+
+# Retry helper — wraps Invoke-RestMethod with up to 3 attempts and exponential
+# back-off. Handles transient TCP resets ("forcibly closed by remote host") that
+# occur behind corporate SSL-inspection proxies or on flaky connections.
+function Invoke-RestMethodWithRetry {
+    param(
+        [hashtable]$Params,
+        [int]$MaxAttempts = 3
+    )
+    $attempt = 0
+    while ($true) {
+        $attempt++
+        try {
+            return Invoke-RestMethod @Params
+        } catch {
+            $msg = $_.Exception.Message
+            $isTransient = ($msg -match "forcibly closed" -or
+                            $msg -match "transport connection" -or
+                            $msg -match "connection was reset" -or
+                            $msg -match "timed out")
+            if ($isTransient -and $attempt -lt $MaxAttempts) {
+                $wait = [math]::Pow(2, $attempt)   # 2s, 4s
+                Write-Host "  Network error (attempt $attempt/$MaxAttempts) — retrying in ${wait}s..."
+                Start-Sleep -Seconds $wait
+            } else {
+                throw
+            }
+        }
+    }
+}
+
 Write-Host ""
 Write-Host "============================================================"
 Write-Host "  Lightworks Pro — Microsoft 365 App Registration"
@@ -31,10 +66,12 @@ Write-Host "Open that URL in your browser, enter the code, and sign in."
 Write-Host ""
 
 # Request device code
-$dcResponse = Invoke-RestMethod -Method POST `
-    -Uri "https://login.microsoftonline.com/organizations/oauth2/v2.0/devicecode" `
-    -ContentType "application/x-www-form-urlencoded" `
-    -Body "client_id=$azureCliClientId&scope=$([Uri]::EscapeDataString($scope))"
+$dcResponse = Invoke-RestMethodWithRetry -Params @{
+    Method      = "POST"
+    Uri         = "https://login.microsoftonline.com/organizations/oauth2/v2.0/devicecode"
+    ContentType = "application/x-www-form-urlencoded"
+    Body        = "client_id=$azureCliClientId&scope=$([Uri]::EscapeDataString($scope))"
+}
 
 Write-Host $dcResponse.message
 Write-Host ""
@@ -88,12 +125,14 @@ $headers = @{ Authorization = "Bearer $accessToken"; "Content-Type" = "applicati
 # Querying the Graph service principal avoids hardcoding GUIDs that can change.
 Write-Host "Resolving Microsoft Graph permission IDs..."
 
-$graphSpResp = Invoke-RestMethod -Method GET `
-    -Uri ("https://graph.microsoft.com/v1.0/servicePrincipals" +
-          "?`$filter=appId eq '00000003-0000-0000-c000-000000000000'" +
-          "&`$select=id,oauth2PermissionScopes") `
-    -Headers $headers `
-    -ErrorAction Stop
+$graphSpResp = Invoke-RestMethodWithRetry -Params @{
+    Method      = "GET"
+    Uri         = ("https://graph.microsoft.com/v1.0/servicePrincipals" +
+                   "?`$filter=appId eq '00000003-0000-0000-c000-000000000000'" +
+                   "&`$select=id,oauth2PermissionScopes")
+    Headers     = $headers
+    ErrorAction = "Stop"
+}
 
 $allScopes = $graphSpResp.value[0].oauth2PermissionScopes
 
@@ -135,12 +174,14 @@ $requiredResourceAccess = @(
 # ── 3. Check for existing app to avoid duplicates ─────────────────────────────
 Write-Host "Checking for existing app registration..."
 
-$existingResp = Invoke-RestMethod -Method GET `
-    -Uri ("https://graph.microsoft.com/v1.0/applications" +
-          "?`$filter=displayName eq 'Lightworks Pro'" +
-          "&`$select=id,appId,displayName") `
-    -Headers $headers `
-    -ErrorAction Stop
+$existingResp = Invoke-RestMethodWithRetry -Params @{
+    Method      = "GET"
+    Uri         = ("https://graph.microsoft.com/v1.0/applications" +
+                   "?`$filter=displayName eq 'Lightworks Pro'" +
+                   "&`$select=id,appId,displayName")
+    Headers     = $headers
+    ErrorAction = "Stop"
+}
 
 $app = $existingResp.value | Select-Object -First 1
 
@@ -188,11 +229,13 @@ if ($app) {
     } | ConvertTo-Json -Depth 10
 
     try {
-        $app = Invoke-RestMethod -Method POST `
-            -Uri "https://graph.microsoft.com/v1.0/applications" `
-            -Headers $headers `
-            -Body $appBody `
-            -ErrorAction Stop
+        $app = Invoke-RestMethodWithRetry -Params @{
+            Method      = "POST"
+            Uri         = "https://graph.microsoft.com/v1.0/applications"
+            Headers     = $headers
+            Body        = $appBody
+            ErrorAction = "Stop"
+        }
     } catch {
         Write-Host "Failed to create app registration:"
         Write-Host $_.ErrorDetails.Message
