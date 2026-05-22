@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "lightworks-pro"
+version = "1.1.0"
+description = "Voice-controlled productivity assistant for blind professionals"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+license-files = ["LICENSE"]
+authors = [
+    { name = "Abu Hoque", email = "" },
+    { name = "Lighthouse Guild, New York" },
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Adaptive Technologies",
+    "Intended Audience :: End Users/Desktop",
+]
+
+[project.scripts]
+lightworks-pro = "lightworks_pro.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "desktop*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+ignore_missing_imports = true

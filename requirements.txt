@@ -1,0 +1,27 @@
+# Voice pipeline
+pyttsx3>=2.90
+sounddevice>=0.4.6        # used for mic recording — replaces PyAudio entirely
+numpy>=1.26
+SpeechRecognition>=3.10   # used for transcription API only (not sr.Microphone)
+# openai-whisper           # optional: on-device STT — install when Python 3.14 wheel available
+# pyaudio                  # NOT required — sounddevice handles all recording
+
+# Microsoft Graph
+msal>=1.28
+requests>=2.31
+keyring>=25.0
+truststore>=0.9    # use Windows native cert store — fixes corporate CA / SSL inspection
+
+# Google Workspace
+google-auth>=2.29
+google-auth-oauthlib>=1.2
+google-api-python-client>=2.128
+
+# Windows desktop
+pystray>=0.19
+Pillow>=10.3
+pywin32>=306
+
+# Windows audio ducking (WASAPI via Core Audio)
+pycaw>=20230407
+comtypes>=1.4

@@ -1,0 +1,23 @@
+{
+  "microsoft_client_id": "YOUR_AZURE_APP_CLIENT_ID",
+  "microsoft_tenant_id": "common",
+  "google_client_secrets_file": "path/to/client_secret.json",
+  "whisper_model": "small",
+  "hotkeys": {
+    "listen":      "ctrl+shift+f1",
+    "inbox":       "ctrl+shift+f2",
+    "meetings":    "ctrl+shift+f3",
+    "teams_call":  "ctrl+shift+f4"
+  },
+  "tts": {
+    "rate": 200,
+    "volume": 1.0
+  },
+  "audio_duck_volume": 0.2,
+  "local_stt_only": true,
+  "log_level": "INFO",
+  "_comment_sharepoint": "Optional: configure if you use the SharePoint staff directory feature",
+  "sharepoint_host": "yourorg.sharepoint.com",
+  "sharepoint_site_path": "/sites/YourSite",
+  "sharepoint_file_path": "Lightworks Pro/staff_directory.xlsx"
+}
