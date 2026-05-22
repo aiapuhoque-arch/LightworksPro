@@ -84,10 +84,12 @@ Source: "..\dist\LightworksPro\_internal\config.example.json"; \
   DestName: "config.json"; \
   Flags: onlyifdoesntexist uninsneveruninstall
 
-; Helper scripts — placed in {app}\scripts\ for IT admins and advanced users.
-; register_azure_app.ps1   : one-time Azure App Registration (requires PowerShell 7+).
+; Helper scripts — placed in {app}\scripts\ for users and IT admins.
+; setup_user.ps1           : run once per machine to configure Microsoft 365 (no admin rights needed).
+; register_azure_app.ps1   : IT admin only — one-time Azure App Registration per organisation.
 ; grant_admin_consent.py   : run once if contact/People.Read search is not working.
 ; set_microsoft_client_id.py: set or change the Azure App Client ID manually.
+Source: "..\scripts\setup_user.ps1";             DestDir: "{app}\scripts"; Flags: ignoreversion
 Source: "..\scripts\register_azure_app.ps1";     DestDir: "{app}\scripts"; Flags: ignoreversion
 Source: "..\scripts\grant_admin_consent.py";     DestDir: "{app}\scripts"; Flags: ignoreversion
 Source: "..\scripts\set_microsoft_client_id.py"; DestDir: "{app}\scripts"; Flags: ignoreversion
@@ -97,11 +99,17 @@ Source: "..\scripts\set_microsoft_client_id.py"; DestDir: "{app}\scripts"; Flags
 Name: "{group}\{#AppName}";            Filename: "{app}\{#AppExeName}"; \
   Comment: "Voice-controlled productivity assistant"
 
-; Start Menu — Microsoft 365 setup script (requires PowerShell 7 / pwsh.exe)
-Name: "{group}\Register Microsoft 365"; \
+; Start Menu — user Microsoft 365 setup (no admin rights needed)
+Name: "{group}\Connect Microsoft 365"; \
+  Filename: "pwsh.exe"; \
+  Parameters: "-NoExit -File ""{app}\scripts\setup_user.ps1"""; \
+  Comment: "Connect your Microsoft 365 account — run once after installation"
+
+; Start Menu — IT admin Azure App Registration
+Name: "{group}\IT Admin — Register Azure App"; \
   Filename: "pwsh.exe"; \
   Parameters: "-NoExit -File ""{app}\scripts\register_azure_app.ps1"""; \
-  Comment: "One-time Microsoft 365 Azure App Registration — run after installation"
+  Comment: "IT administrators only — one-time Azure App Registration for your organisation"
 
 Name: "{group}\Uninstall {#AppName}";  Filename: "{uninstallexe}"
 
@@ -125,13 +133,13 @@ Root: HKCU; \
 Filename: "{app}\{#AppExeName}"; \
   Flags: nowait
 
-; Optional: run the Microsoft 365 Azure App Registration script.
+; Post-install: run the user setup script to configure Microsoft 365.
 ; Presented as a checkbox on the final installer page.
-; Requires PowerShell 7 (pwsh.exe) — pre-installed on Windows 11.
+; No admin rights or Azure permissions needed — safe for all users.
 Filename: "pwsh.exe"; \
-  Parameters: "-NoExit -File ""{app}\scripts\register_azure_app.ps1"""; \
-  Description: "Register Microsoft 365 (recommended — connects calendar, email and calling)"; \
-  Flags: postinstall shellexec skipifsilent unchecked
+  Parameters: "-NoExit -File ""{app}\scripts\setup_user.ps1"""; \
+  Description: "Connect Microsoft 365 (recommended — connects calendar, email and calling)"; \
+  Flags: postinstall shellexec skipifsilent
 
 [UninstallRun]
 ; Signal the running instance to shut down gracefully before files are removed
