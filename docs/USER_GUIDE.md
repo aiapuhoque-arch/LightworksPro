@@ -398,9 +398,9 @@ The default speech rate is comfortable for most users. To adjust, say "faster", 
 
 ## Connecting Microsoft 365
 
-### Step 1 — Create an Azure App (one time only)
+### IT Administrator — do this once only
 
-Run the included registration script from PowerShell:
+Run the registration script from PowerShell **on any one machine**, signed in with an account that has Azure AD Application Administrator or Global Administrator rights:
 
 ```powershell
 pwsh -File "scripts\register_azure_app.ps1"
@@ -408,14 +408,29 @@ pwsh -File "scripts\register_azure_app.ps1"
 
 This script:
 1. Opens a sign-in page in your browser automatically.
-2. Creates a Lightworks Pro app registration in your Microsoft 365 tenant.
-3. Saves the Client ID to your config file automatically.
+2. Creates the Lightworks Pro app registration in your Microsoft 365 tenant.
+3. Saves the Client ID to the config file on the machine where you run it.
+4. Outputs the Client ID — **copy and keep this value**, you will share it with users.
 
-You will need to sign in with a **work or school Microsoft 365 account** (not a personal @outlook.com account).
+> This step only needs to be done **once per organisation**, not once per user.
 
-### Step 2 — Sign in to Microsoft 365 (first launch after connecting)
+---
 
-When Lightworks Pro starts after the Client ID is saved, it will:
+### Each User — run setup_user.ps1 (no admin rights needed)
+
+Every user installing Lightworks Pro on their machine runs this single script. No Azure permissions, no browser sign-in, no administrator required:
+
+```powershell
+pwsh -File "scripts\setup_user.ps1" -ClientId "YOUR-CLIENT-ID-HERE"
+```
+
+The script writes the Client ID to `%APPDATA%\LightworksPro\config.json` and exits.
+
+---
+
+### Step — Sign in to Microsoft 365 (first launch only)
+
+After running `setup_user.ps1`, launch Lightworks Pro. On first use it will:
 
 1. Open the Microsoft sign-in page in your default browser automatically.
 2. Copy the sign-in code to your clipboard.
@@ -425,7 +440,7 @@ When Lightworks Pro starts after the Client ID is saved, it will:
 
 After this one-time sign-in, credentials are saved and you will stay connected across restarts.
 
-### Step 3 — Grant admin consent for contact search (if needed)
+### Grant admin consent for contact search (if needed)
 
 If contact search does not work (calling by name fails, or you hear *"contact directory is empty"* on startup), your organisation may require an administrator to approve the People directory permission.
 

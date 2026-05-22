@@ -145,10 +145,8 @@ $existingResp = Invoke-RestMethod -Method GET `
 $app = $existingResp.value | Select-Object -First 1
 
 if ($app) {
-    Write-Host "Existing 'Lightworks Pro' app found (Client ID: $($app.appId)). Updating permissions..."
-    # Also ensure the native-client redirect URI and fallback flag are set.
-    # These are required for the admin-consent page to redirect correctly after
-    # the admin clicks Accept (without them the user sees "wrong page" error).
+    Write-Host "Existing 'Lightworks Pro' app found (Client ID: $($app.appId))."
+    Write-Host "Attempting to update permissions (requires app ownership or admin role)..."
     $patchBody = @{
         requiredResourceAccess = $requiredResourceAccess
         isFallbackPublicClient = $true
@@ -156,12 +154,26 @@ if ($app) {
             redirectUris = @("https://login.microsoftonline.com/common/oauth2/nativeclient")
         }
     } | ConvertTo-Json -Depth 10
-    Invoke-RestMethod -Method PATCH `
-        -Uri "https://graph.microsoft.com/v1.0/applications/$($app.id)" `
-        -Headers $headers `
-        -Body $patchBody `
-        -ErrorAction Stop | Out-Null
-    Write-Host "Permissions and redirect URI updated."
+    try {
+        Invoke-RestMethod -Method PATCH `
+            -Uri "https://graph.microsoft.com/v1.0/applications/$($app.id)" `
+            -Headers $headers `
+            -Body $patchBody `
+            -ErrorAction Stop | Out-Null
+        Write-Host "Permissions and redirect URI updated."
+    } catch {
+        $errBody = $_.ErrorDetails.Message | ConvertFrom-Json -ErrorAction SilentlyContinue
+        if ($errBody.error.code -eq "Authorization_RequestDenied") {
+            Write-Host ""
+            Write-Host "Note: You do not have permission to modify this app registration."
+            Write-Host "That is OK — the app is already configured by your IT administrator."
+            Write-Host "Continuing with the existing Client ID..."
+            Write-Host ""
+        } else {
+            Write-Host "Warning: Could not update app registration: $($errBody.error.message)"
+            Write-Host "Continuing with the existing Client ID..."
+        }
+    }
 } else {
     # ── 4. Create the app ─────────────────────────────────────────────────────
     Write-Host "Creating app registration..."
