@@ -179,7 +179,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-Developed by **Abu Hoque**, Senior Network Engineer at **Lighthouse Guild, New York, NY 10023** — a leading vision rehabilitation organisation serving blind and visually impaired individuals.
+Developed by **Abu Hoque**, Senior Network Engineer — **Lighthouse Guild, New York, NY 10023** — a leading vision rehabilitation organisation serving blind and visually impaired individuals.
 
 ## License
 
