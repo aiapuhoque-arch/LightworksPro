@@ -179,8 +179,8 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-Developed by **Abu Hoque** at **Lighthouse Guild, New York** — a leading vision rehabilitation organisation serving blind and visually impaired individuals.
+Developed by **Abu Hoque**, Senior Network Engineer at **Lighthouse Guild, New York, NY 10023** — a leading vision rehabilitation organisation serving blind and visually impaired individuals.
 
 ## License
 
-[MIT](LICENSE) — Copyright (c) 2026 Abu Hoque & Lighthouse Guild, New York. Free to use, modify, and distribute.
+[MIT](LICENSE) — Copyright (c) 2026 Abu Hoque, Senior Network Engineer — Lighthouse Guild, New York, NY 10023. Free to use, modify, and distribute.
