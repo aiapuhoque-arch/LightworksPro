@@ -8,8 +8,8 @@
 
 #define AppName       "Lightworks Pro"
 #define AppVersion    "1.2.0"
-#define AppPublisher  "Abu Hoque & Lighthouse Guild, New York"
-#define AppCopyright  "Copyright (c) 2026 Abu Hoque & Lighthouse Guild, New York. MIT License."
+#define AppPublisher  "Abu Hoque, Senior Network Engineer — Lighthouse Guild, New York, NY 10023"
+#define AppCopyright  "Copyright (c) 2026 Abu Hoque, Senior Network Engineer — Lighthouse Guild, New York, NY 10023. MIT License."
 #define AppExeName    "LightworksPro.exe"
 #define AppId         "{{A3F2B8C1-D4E5-4F67-8901-234567890ABC}"
 

@@ -10,8 +10,8 @@ requires-python = ">=3.12"
 license = { text = "MIT" }
 license-files = ["LICENSE"]
 authors = [
-    { name = "Abu Hoque", email = "" },
-    { name = "Lighthouse Guild, New York" },
+    { name = "Abu Hoque, Senior Network Engineer", email = "" },
+    { name = "Lighthouse Guild, New York, NY 10023" },
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
